@@ -1,4 +1,3 @@
-
 export const tetrominos = ['I', 'O', 'Z', 'S', 'J', 'L', 'T'];
 
 export const tetrominosPositions = {
@@ -52,8 +51,13 @@ export const tetrominosColors = {
   'I': 'emerald-300',
   'O': 'orange-300',
   'Z': 'red-300',
-  'S': 'blue-300',
+  'S': 'purple-300',
   'J': 'fuchsia-300',
   'L': 'yellow-300',
   'T': 'indigo-300',
+  '_black': '',
+}
+
+export function getNewQueue() {
+  return tetrominos.slice().sort(() => Math.random());
 }

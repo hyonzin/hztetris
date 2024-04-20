@@ -18,7 +18,7 @@ const config: Config = {
   plugins: [],
   safelist: [
     {
-      pattern: /bg-(gray|emerald|orange|red|blue|fuchsia|yellow|indigo)-(300|800)/,
+      pattern: /bg-(gray|emerald|orange|red|purple|fuchsia|yellow|indigo)-(300|800)/,
       variants: [],
     },
   ],
