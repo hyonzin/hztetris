@@ -163,7 +163,7 @@ export default function play() {
     }
   }, 1000 / FPS);
   
-  useKeypress(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'], (event) => {
+  useKeypress(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Control'], (event) => {
     let x = curPos[0]
     let y = curPos[1]
     let degree = curDegree;
@@ -171,6 +171,12 @@ export default function play() {
     if (event.key === 'ArrowUp') {
       if (checkPosIsPosible(curTet, (degree+1)%4, [x, y])) {
         degree = (degree+1)%4;
+        setCurDegree(degree)
+      }
+    } else if (event.key === 'Control') {
+      console.log('control')
+      if (checkPosIsPosible(curTet, (degree-1+4)%4, [x, y])) {
+        degree = (degree-1+4)%4;
         setCurDegree(degree)
       }
     } else if (event.key === 'ArrowDown') {
@@ -258,6 +264,13 @@ export default function play() {
         <PreviewTetrisView
           tetrisArray={getPreview()}
         />
+        
+        <div className="m-5">
+          Space: 내리기<br />
+          Shift: 킵<br />
+          ↑: 시계방향 회전<br />
+          Ctrl (control): 반시계뱡향 회전<br />
+        </div>
       </div>
       
       <div>
