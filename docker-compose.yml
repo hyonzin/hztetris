@@ -1,0 +1,11 @@
+version: "3"
+services:
+  app:
+    image: hztetris-client:latest
+    ports:
+      - 8000:8000
+    restart: always
+    networks:
+      - net
+networks:
+  net:
