@@ -1,17 +1,18 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { TetrisView, KeepTetrisView, PreviewTetrisView } from '/app/play/tetris_view'
-import { tetrominos, tetrominosPositions, tetrominosColors, getNewQueue } from '/app/play/tetrominos'
-import { useInterval } from '/app/useInterval';
+import { TetrisView, KeepTetrisView, PreviewTetrisView } from './tetrisView'
+import { tetrominos, tetrominosPositions, tetrominosColors, tetrominosRotationTests, getNewQueue } from './tetrominos'
+import { useInterval } from '../useInterval';
 import { socket } from '../socket';
 import useKeypress from 'react-use-keypress';
 
-export default function play() {
+export default function Play() {
+  const [isGameOver, setIsGameOver] = useState(false)
   const [tetQueue, setTetQueue] = useState(getNewQueue())
   
   function consumeTetQueue() {
     let _tetQueue = tetQueue.slice()
-    let newTet = _tetQueue.shift();
+    let newTet = _tetQueue.shift() || '';
     if (_tetQueue.length < tetrominos.length) {
       _tetQueue = _tetQueue.concat(getNewQueue())
     }
@@ -27,6 +28,7 @@ export default function play() {
   const [isAvailableKeep, setIsAvailableKeep] = useState(true)
   const [curDegree, setCurDegree] = useState(0)
   const [score, setScore] = useState(0)
+  const [gainedScore, setGainedScore] = useState(0)
   const [tScoreUpdated, setTScoreUpdated] = useState(0)
   
   const FPS = 30 // 60
@@ -34,13 +36,15 @@ export default function play() {
   const rows = 20
   const columns = 10
   
-  const [tetrisArrFg, setTetrisArrFg] = useState(Array(rows).fill().map(() => Array(columns).fill('')))
-  const [tetrisArrBg, setTetrisArrBg] = useState(Array(rows).fill().map(() => Array(columns).fill('')))
+  const SCORE_PER_LINE = 5
   
-  const numPreviews = 7
+  const [tetrisArrFg, setTetrisArrFg] = useState(Array(rows).fill('').map(() => Array(columns).fill('')))
+  const [tetrisArrBg, setTetrisArrBg] = useState(Array(rows).fill('').map(() => Array(columns).fill('')))
+  
+  const numPreviews = 4
   
   function setForeground(tet, degree, pos) {
-    let _tetrisArrFg = Array(rows).fill().map(() => Array(columns).fill(''));
+    let _tetrisArrFg = Array(rows).fill('').map(() => Array(columns).fill(''));
     for (let i=0; i<4; i++) {
       let tx = tetrominosPositions[tet][degree][i][0];
       let ty = tetrominosPositions[tet][degree][i][1];
@@ -50,7 +54,7 @@ export default function play() {
   }
   
   function getKeepTet() {
-    let Prv = Array(4).fill().map(() => Array(4).fill('_black'))
+    let Prv = Array(4).fill('').map(() => Array(4).fill('_black'))
     let tet = keepTet
     let degree = 0
     if (tet != '') {
@@ -64,7 +68,7 @@ export default function play() {
   }
   
   function getPreview() {
-    let Prv = Array(numPreviews*4).fill().map(() => Array(4).fill('_black'))
+    let Prv = Array(numPreviews*4).fill('').map(() => Array(4).fill('_black'))
     for (let pi=0; pi<numPreviews; pi++) {
       let tet = tetQueue[pi]
       let degree = 0
@@ -77,8 +81,17 @@ export default function play() {
     return Prv;
   }
   
+  function checkGameOver() {
+    if (!isGameOver) {
+      return false
+    }
+    return true
+  }
+  
   function checkLineClear() {
     let _tetrisArrBg = tetrisArrBg.slice();
+    let _score = score;
+    let _gainedScore = 0;
     let y = 0;
     for (; y<rows; y++) {
       let isClear = true;
@@ -90,7 +103,8 @@ export default function play() {
       }
       if (isClear == true) {
         // gain score
-        setScore(score+1)
+        _gainedScore += SCORE_PER_LINE
+        setScore(_score + _gainedScore)
         setTScoreUpdated(Date.now())
         // shift
         for (let ty=y; ty>=0; ty--) {
@@ -101,10 +115,11 @@ export default function play() {
       }
     }
     setTetrisArrBg(_tetrisArrBg.slice());
+    setGainedScore(_gainedScore)
   }
   
   function resetForeground(newTet) {
-    if (newTet == undefined) {
+    if (!newTet) {
       newTet = consumeTetQueue()
     }
     let newDegree = 0
@@ -113,7 +128,12 @@ export default function play() {
     setCurDegree(newDegree)
     setCurPos(newPos)
     
-    let _tetrisArrFg = Array(rows).fill().map(() => Array(columns).fill(''));
+    if (!checkPosIsPosible(newTet, newDegree, newPos)) {
+      setIsGameOver(true)
+      return
+    }
+    
+    let _tetrisArrFg = Array(rows).fill('').map(() => Array(columns).fill(''));
     setTetrisArrFg(_tetrisArrFg);
     
     setForeground(newTet, newDegree, newPos)
@@ -146,6 +166,9 @@ export default function play() {
   }
   
   useInterval(() => {
+    if (checkGameOver() == true) {
+      return
+    }
     if (Date.now() - tStart >= tickInterval) {
       let x = curPos[0]
       let y = curPos[1]
@@ -155,51 +178,85 @@ export default function play() {
         setTStart(tStart + tickInterval)
         setForeground(curTet, curDegree, [x, y+1])
       } else {
-        setBackground(curTet, curDegree, [x, y])
+        setBackground(curTet, curDegree, [x, y])  
         checkLineClear()
-        resetForeground()
+        
+        resetForeground('')
         setIsAvailableKeep(true)
       }
     }
   }, 1000 / FPS);
   
   useKeypress(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Control'], (event) => {
+    if (checkGameOver() == true) {
+      return
+    }
     let x = curPos[0]
     let y = curPos[1]
-    let degree = curDegree;
+    let tet = curTet
+    let degree = curDegree
     
     if (event.key === 'ArrowUp') {
-      if (checkPosIsPosible(curTet, (degree+1)%4, [x, y])) {
-        degree = (degree+1)%4;
-        setCurDegree(degree)
+      let tDegree = (degree+1)%4
+
+      let tests = tetrominosRotationTests['default']['R'][curDegree]
+      if (curTet in tetrominosRotationTests) {
+        tests = tetrominosRotationTests[curTet]['R'][curDegree]
       }
+      
+      for (let ti=0; ti<tests.length; ti++) {
+        if (checkPosIsPosible(tet, tDegree, [x+tests[ti][0], y+tests[ti][1]])) {
+          x += tests[ti][0]
+          y += tests[ti][1]
+          degree = tDegree
+          setCurPos([x, y])
+          setCurDegree(degree)
+          break
+        }
+      }
+      
     } else if (event.key === 'Control') {
-      console.log('control')
-      if (checkPosIsPosible(curTet, (degree-1+4)%4, [x, y])) {
-        degree = (degree-1+4)%4;
-        setCurDegree(degree)
+      let tDegree = (degree-1+4)%4
+
+      let tests = tetrominosRotationTests['default']['L'][curDegree]
+      if (curTet in tetrominosRotationTests) {
+        tests = tetrominosRotationTests[curTet]['L'][curDegree]
+      }
+      
+      for (let ti=0; ti<tests.length; ti++) {
+        if (checkPosIsPosible(tet, tDegree, [x+tests[ti][0], y+tests[ti][1]])) {
+          x += tests[ti][0]
+          y += tests[ti][1]
+          degree = tDegree
+          setCurPos([x, y])
+          setCurDegree(degree)
+          break
+        }
       }
     } else if (event.key === 'ArrowDown') {
-      if (checkPosIsPosible(curTet, degree, [x, y+1])) {
+      if (checkPosIsPosible(tet, degree, [x, y+1])) {
         y += 1;
         setCurPos([x, y])
         setTStart(Date.now())
       }
     } else if (event.key === 'ArrowLeft') {
-      if (checkPosIsPosible(curTet, degree, [x-1, y])) {
+      if (checkPosIsPosible(tet, degree, [x-1, y])) {
         x -= 1;
         setCurPos([x, y])
       }
     } else if (event.key === 'ArrowRight') {
-      if (checkPosIsPosible(curTet, degree, [x+1, y])) {
+      if (checkPosIsPosible(tet, degree, [x+1, y])) {
         x += 1;
         setCurPos([x, y])
       }
     }
-    setForeground(curTet, degree, [x, y])
+    setForeground(tet, degree, [x, y])
   });
   
   useKeypress([' '], (event) => {
+    if (checkGameOver() == true) {
+      return
+    }
     let x = curPos[0]
     let y = curPos[1]
     let degree = curDegree;
@@ -209,7 +266,7 @@ export default function play() {
         setBackground(curTet, curDegree, [x, y])
         checkLineClear()
         
-        resetForeground()
+        resetForeground('')
         setIsAvailableKeep(true)
         setTStart(Date.now())
         return
@@ -223,11 +280,14 @@ export default function play() {
   });
   
   useKeypress(['Shift'], (event) => {
+    if (checkGameOver() == true) {
+      return
+    }
     if (isAvailableKeep == true) {
       if (keepTet != '') {
         resetForeground(keepTet)
       } else {
-        resetForeground()
+        resetForeground('')
       }
       setKeepTet(curTet);
       setIsAvailableKeep(false)
@@ -243,13 +303,18 @@ export default function play() {
   }, [])
   
   function mergeArray(arr1, arr2) {
-    let merged = Array(rows).fill().map(() => Array(columns).fill(0));
+    let merged = Array(rows).fill('').map(() => Array(columns).fill(0));
     for (let i=0; i<rows; i++) {
       for (let j=0; j<columns; j++) {
         merged[i][j] = arr1[i][j] || arr2[i][j]
       }
     }
     return merged
+  }
+  
+  let gameOver = <div></div>
+  if (isGameOver == true) {
+    gameOver = <div className="absolute text-red-600 text-2xl font-bold text-center top-[268px] left-[144px]">Game Over</div>;
   }
   
   return (
@@ -271,11 +336,13 @@ export default function play() {
           ↑: 시계방향 회전<br />
           Ctrl (control): 반시계뱡향 회전<br />
         </div>
+        
+        {gameOver}
       </div>
       
       <div>
         Score: {score}
-        <span className="text-green-400">{(Date.now()-tScoreUpdated < 1500)?' (+1 점!)':''}</span>
+        <span className="text-green-400">{(Date.now()-tScoreUpdated < 1500)?` (+${gainedScore} 점!)`:''}</span>
       </div>
     </main>
   );
