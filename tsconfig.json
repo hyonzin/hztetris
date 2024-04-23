@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "src",
     "lib": [
       "dom",
       "dom.iterable",
@@ -29,10 +30,8 @@
     }
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
     "dist/types/**/*.ts"
   ],
   "exclude": [

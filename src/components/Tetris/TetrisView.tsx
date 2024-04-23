@@ -1,5 +1,5 @@
 'use client'
-import React from 'react';
+import React from 'react'
 import { tetrominosColors } from './tetrominos'
 
 export function TetrisView({ tetrisArray }) {
@@ -10,15 +10,14 @@ export function TetrisView({ tetrisArray }) {
             row.map((val, col_idx) => (
               <div
                 key={col_idx}
-                className={`rounded bg-${tetrominosColors[val]} w-[28px] h-[28px]`}
+                className={`rounded ${tetrominosColors[val]} w-[28px] h-[28px]`}
               ></div>
             ))
           ))
         }
       </div>
-  );
+  )
 }
-
 
 export function KeepTetrisView({ tetrisArray }) {
   return (
@@ -28,14 +27,15 @@ export function KeepTetrisView({ tetrisArray }) {
           {
             tetrisArray.map((row, row_idx) => (
               row.map((val, col_idx) => (
-                <div key={col_idx} className={`rounded bg-${tetrominosColors[val]} w-[14px] h-[14px]`}></div>
+                <div key={col_idx} className={`rounded ${tetrominosColors[val]} w-[14px] h-[14px]`}></div>
               ))
             ))
           }
         </div>
       </div>
-  );
+  )
 }
+
 export function PreviewTetrisView({ tetrisArray }) {
   return (
       <div>
@@ -44,11 +44,11 @@ export function PreviewTetrisView({ tetrisArray }) {
           {
             tetrisArray.map((row, row_idx) => (
               row.map((val, col_idx) => (
-                <div key={col_idx} className={`rounded bg-${tetrominosColors[val]} w-[14px] h-[14px]`}></div>
+                <div key={col_idx} className={`rounded ${tetrominosColors[val]} w-[14px] h-[14px]`}></div>
               ))
             ))
           }
         </div>
       </div>
-  );
+  )
 }

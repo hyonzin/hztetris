@@ -1,4 +1,4 @@
-export const tetrominos = ['I', 'O', 'Z', 'S', 'J', 'L', 'T'];
+export const tetrominos = ['I', 'O', 'Z', 'S', 'J', 'L', 'T']
 
 export const tetrominosPositions = {
   'I': [
@@ -51,17 +51,17 @@ export const tetrominosPositions = {
   ],
 }
 
-// ['I', 'O', 'Z', 'S', 'J', 'L', 'T'];
+// ['I', 'O', 'Z', 'S', 'J', 'L', 'T']
 export const tetrominosColors = {
-  '': 'gray-800',
-  'I': 'emerald-300',
-  'O': 'orange-300',
-  'Z': 'red-300',
-  'S': 'purple-300',
-  'J': 'fuchsia-300',
-  'L': 'yellow-300',
-  'T': 'indigo-300',
-  '_black': '',
+  '': 'bg-gray-800',
+  '_black': 'bg-transparent',
+  'I': 'bg-emerald-300',
+  'O': 'bg-orange-300',
+  'Z': 'bg-red-300',
+  'S': 'bg-purple-300',
+  'J': 'bg-fuchsia-300',
+  'L': 'bg-yellow-300',
+  'T': 'bg-indigo-300',
 }
 
 export const tetrominosRotationTests = {
@@ -109,6 +109,17 @@ export const tetrominosRotationTests = {
   },
 }
 
+function _shuffle(source_array) {
+  let array = source_array.slice()
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1))
+    let tmp = array[i]
+    array[i] = array[j]
+    array[j] = tmp
+  }
+  return array
+}
+
 export function getNewQueue() {
-  return tetrominos.slice().sort(() => Math.random());
+  return _shuffle(tetrominos)
 }

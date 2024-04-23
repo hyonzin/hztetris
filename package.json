@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 8000",
+    "dev": "npx next dev -p 8000",
     "build": "npx next build",
-    "start": "next start -p 8000",
-    "lint": "next lint"
+    "start": "npx next start -p 8000",
+    "lint": "npx next lint"
   },
   "dependencies": {
     "konva": "^9.3.6",
