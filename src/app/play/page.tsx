@@ -78,7 +78,6 @@ export default function Play() {
         Prv[pi*4+2+ty][2+tx] = tet
       }
     }
-    console.log(Prv)
     return Prv
   }
   
