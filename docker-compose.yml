@@ -2,7 +2,7 @@ services:
   nginx:
     image: nginx:1.25.5-alpine
     ports:
-      - ${APP:-8000}:80
+      - ${APP_PORT:-8000}:80
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     restart: always
