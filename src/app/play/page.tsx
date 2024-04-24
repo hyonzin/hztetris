@@ -188,6 +188,7 @@ export default function Play() {
   }, 1000 / FPS)
   
   useKeypress(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Control'], (event) => {
+    event.preventDefault()
     if (checkGameOver() == true) {
       return
     }
@@ -319,7 +320,7 @@ export default function Play() {
   
   return (
     <main>
-      <div className="flex items-start justify-items-start">
+      <div className="flex items-start justify-items-start mx-10 my-5 gap-3">
         <KeepTetrisView
           tetrisArray={getKeepTet()}
         />
@@ -340,7 +341,7 @@ export default function Play() {
         {gameOver}
       </div>
       
-      <div>
+      <div className="mx-[112px]">
         Score: {score}
         <span className="text-green-400">{(Date.now()-tScoreUpdated < 1500)?` (+${gainedScore} 점!)`:''}</span>
       </div>
