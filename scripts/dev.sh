@@ -7,5 +7,5 @@ docker run --rm -d \
 	-p 8000:8000 \
 	-v $(pwd)/src:/app/src \
 	--name hztetris-client-dev-app \
-	hztetris-client:dev
+	hztetris-client:latest
 
