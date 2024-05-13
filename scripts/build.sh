@@ -1,5 +1,7 @@
 #!/bin/bash
 
-docker build -t hztetris-client:latest .
+TAG=${1:-latest}
+
+docker build -t hztetris-client:$TAG .
 
 docker image prune --force
