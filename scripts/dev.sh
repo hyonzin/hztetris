@@ -5,7 +5,7 @@ sleep 1
 
 docker run --rm -d \
 	-p 8000:8000 \
-	-v $(pwd)/src:/app/src \
+	-v $(pwd):/app \
 	--name hztetris-client-dev-app \
-	hztetris-client:dev
+	hztetris-client:latest npm run dev
 

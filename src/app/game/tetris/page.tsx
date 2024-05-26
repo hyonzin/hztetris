@@ -7,7 +7,6 @@ export default function Home() {
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-lg">
         <ul>
           <li><a className="hover:text-red-500" href="/game/tetris/single/play">Single Play</a></li>
-          <li><a className="hover:text-red-500" href="/game/tetris/mingle">Multi Play</a></li>
         </ul>
       </div>
     </main>

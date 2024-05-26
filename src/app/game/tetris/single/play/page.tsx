@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { TetrisView, KeepTetrisView, PreviewTetrisView } from 'components/Tetris/TetrisView'
+import { TetrisView, HoldTetrisView, PreviewTetrisView } from 'components/Tetris/TetrisView'
 import { tetrominos, tetrominosPositions, tetrominosColors, tetrominosRotationTests, getNewQueue } from 'components/Tetris/tetrominos'
 import { useInterval } from 'lib/useInterval'
 import { socket } from 'lib/socket'
@@ -24,8 +24,8 @@ export default function Play() {
   
   const [curPos, setCurPos] = useState([5, 1])
   const [curTet, setCurTet] = useState('')
-  const [keepTet, setKeepTet] = useState('')
-  const [isAvailableKeep, setIsAvailableKeep] = useState(true)
+  const [holdTet, setHoldTet] = useState('')
+  const [isAvailableHold, setIsAvailableHold] = useState(true)
   const [curDegree, setCurDegree] = useState(0)
   const [score, setScore] = useState(0)
   const [gainedScore, setGainedScore] = useState(0)
@@ -53,9 +53,9 @@ export default function Play() {
     setTetrisArrFg(_tetrisArrFg)
   }
   
-  function getKeepTet() {
+  function getHoldTet() {
     let Prv = Array(4).fill('').map(() => Array(4).fill('_black'))
-    let tet = keepTet
+    let tet = holdTet
     let degree = 0
     if (tet != '') {
       for (let i=0; i<4; i++) {
@@ -182,7 +182,7 @@ export default function Play() {
         checkLineClear()
   
         resetForeground('')
-        setIsAvailableKeep(true)
+        setIsAvailableHold(true)
       }
     }
   }, 1000 / FPS)
@@ -268,7 +268,7 @@ export default function Play() {
         checkLineClear()
         
         resetForeground('')
-        setIsAvailableKeep(true)
+        setIsAvailableHold(true)
         setTStart(Date.now())
         return
       }
@@ -284,14 +284,14 @@ export default function Play() {
     if (checkGameOver() == true) {
       return
     }
-    if (isAvailableKeep == true) {
-      if (keepTet != '') {
-        resetForeground(keepTet)
+    if (isAvailableHold == true) {
+      if (holdTet != '') {
+        resetForeground(holdTet)
       } else {
         resetForeground('')
       }
-      setKeepTet(curTet)
-      setIsAvailableKeep(false)
+      setHoldTet(curTet)
+      setIsAvailableHold(false)
     }
   })
   
@@ -321,8 +321,8 @@ export default function Play() {
   return (
     <main>
       <div className="flex items-start justify-items-start mx-10 my-5 gap-3">
-        <KeepTetrisView
-          tetrisArray={getKeepTet()}
+        <HoldTetrisView
+          tetrisArray={getHoldTet()}
         />
         <TetrisView
           tetrisArray={mergeArray(tetrisArrFg, tetrisArrBg)}

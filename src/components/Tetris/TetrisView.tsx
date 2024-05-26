@@ -19,10 +19,10 @@ export function TetrisView({ tetrisArray }) {
   )
 }
 
-export function KeepTetrisView({ tetrisArray }) {
+export function HoldTetrisView({ tetrisArray }) {
   return (
       <div>
-        Keep:
+        Hold:
         <div className="grid grid-cols-4 gap-[1px] min-w-[59px] bg-gray-900">
           {
             tetrisArray.map((row, row_idx) => (
