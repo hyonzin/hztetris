@@ -21,6 +21,7 @@ export default function Play() {
   }
   
   const [tStart, setTStart] = useState(Date.now())
+  const [tGameStart, setTGameStart] = useState(Date.now())
   
   const [curPos, setCurPos] = useState([5, 1])
   const [curTet, setCurTet] = useState('')
@@ -30,11 +31,13 @@ export default function Play() {
   const [score, setScore] = useState(0)
   const [gainedScore, setGainedScore] = useState(0)
   const [tScoreUpdated, setTScoreUpdated] = useState(0)
+  const [nCombo, setNCombo] = useState(0)
   
   const FPS = 60
-  const tickInterval = 1000
+  const baseTickInterval = 1000
   const rows = 20
   const columns = 10
+  const speedUpPerMinute = (baseTickInterval, minutes) => (Math.max(baseTickInterval - minutes*200, 200))
   
   const SCORE_PER_LINE = 5
   
@@ -42,6 +45,11 @@ export default function Play() {
   const [tetrisArrBg, setTetrisArrBg] = useState(Array(rows).fill('').map(() => Array(columns).fill('')))
   
   const numPreviews = 4
+  
+  function getTickInterval() {
+    let minutes = (Date.now() - tGameStart) / (1000 * 60)
+    return speedUpPerMinute(baseTickInterval, minutes);
+  }
   
   function setForeground(tet, degree, pos) {
     let _tetrisArrFg = Array(rows).fill('').map(() => Array(columns).fill(''))
@@ -165,17 +173,23 @@ export default function Play() {
     return true
   }
   
+  function getTime() {
+    let minute = Math.floor((Date.now() - tGameStart) / 1000 / 60)
+    let second = Math.floor((Date.now() - tGameStart) / 1000 % 60)
+    return `${(minute<10)?'0':''}${minute}:${(second<10)?'0':''}${second}`
+  }
+  
   useInterval(() => {
     if (checkGameOver() == true) {
       return
     }
-    if (Date.now() - tStart >= tickInterval) {
+    if (Date.now() - tStart >= getTickInterval()) {
       let x = curPos[0]
       let y = curPos[1]
   
       if (checkPosIsPosible(curTet, curDegree, [x, y+1])) {
         setCurPos([x, y+1])
-        setTStart(tStart + tickInterval)
+        setTStart(tStart + getTickInterval())
         setForeground(curTet, curDegree, [x, y+1])
       } else {
         setBackground(curTet, curDegree, [x, y])  
@@ -277,10 +291,8 @@ export default function Play() {
     
   })
   
-  useKeypress(['Escape'], (event) => {
-  })
-  
-  useKeypress(['Shift'], (event) => {
+  useKeypress(['Shift', 'Tab'], (event) => {
+    event.preventDefault()
     if (checkGameOver() == true) {
       return
     }
@@ -333,16 +345,17 @@ export default function Play() {
         
         <div className="m-5">
           Space: 내리기<br />
-          Shift: 킵<br />
+          Shift, Tab: 킵<br />
           ↑: 시계방향 회전<br />
-          Ctrl (control): 반시계뱡향 회전<br />
+          Ctrl: 반시계뱡향 회전<br />
         </div>
         
         {gameOver}
       </div>
       
       <div className="mx-[112px]">
-        Score: {score}
+        {getTime()}<br />
+        Score: {score}<br />
         <span className="text-green-400">{(Date.now()-tScoreUpdated < 1500)?` (+${gainedScore} 점!)`:''}</span>
       </div>
     </main>
