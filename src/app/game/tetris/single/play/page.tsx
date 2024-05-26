@@ -31,7 +31,7 @@ export default function Play() {
   const [score, setScore] = useState(0)
   const [gainedScore, setGainedScore] = useState(0)
   const [tScoreUpdated, setTScoreUpdated] = useState(0)
-  const [nCombo, setNCombo] = useState(0)
+  const [nCombo, setNCombo] = useState(-1)
   
   const FPS = 60
   const baseTickInterval = 1000
@@ -40,6 +40,7 @@ export default function Play() {
   const speedUpPerMinute = (baseTickInterval, minutes) => (Math.max(baseTickInterval - minutes*200, 200))
   
   const SCORE_PER_LINE = 5
+  const getComboScore = (baseScore, combo) => (baseScore * combo)
   
   const [tetrisArrFg, setTetrisArrFg] = useState(Array(rows).fill('').map(() => Array(columns).fill('')))
   const [tetrisArrBg, setTetrisArrBg] = useState(Array(rows).fill('').map(() => Array(columns).fill('')))
@@ -98,8 +99,7 @@ export default function Play() {
   
   function checkLineClear() {
     let _tetrisArrBg = tetrisArrBg.slice()
-    let _score = score
-    let _gainedScore = 0
+    let nLineCleared = 0
     let y = 0
     for (; y<rows; y++) {
       let isClear = true
@@ -110,10 +110,7 @@ export default function Play() {
         }
       }
       if (isClear == true) {
-        // gain score
-        _gainedScore += SCORE_PER_LINE
-        setScore(_score + _gainedScore)
-        setTScoreUpdated(Date.now())
+        nLineCleared += 1
         // shift
         for (let ty=y; ty>=0; ty--) {
           for (let x=0; x<columns; x++) {
@@ -122,8 +119,27 @@ export default function Play() {
         }
       }
     }
-    setTetrisArrBg(_tetrisArrBg.slice())
-    setGainedScore(_gainedScore)
+    console.log('nLineCleared')
+    console.log(nLineCleared)
+    if (nLineCleared > 0) {
+      let _score = score
+      let _nCombo = nCombo
+      // increase combo
+      _nCombo += 1
+      setNCombo(_nCombo)
+      // gain score
+      let _gainedScore = (SCORE_PER_LINE * nLineCleared) + getComboScore((SCORE_PER_LINE * nLineCleared), _nCombo)
+      console.log('_gainedScore')
+      console.log(_gainedScore)
+      setScore(_score + _gainedScore)
+      setGainedScore(_gainedScore)
+      setTScoreUpdated(Date.now())
+      // update foreground
+      setTetrisArrBg(_tetrisArrBg.slice())
+    } else {
+      // reset combo
+      setNCombo(-1)
+    }
   }
   
   function resetForeground(newTet) {
@@ -356,7 +372,12 @@ export default function Play() {
       <div className="mx-[112px]">
         {getTime()}<br />
         Score: {score}<br />
-        <span className="text-green-400">{(Date.now()-tScoreUpdated < 1500)?` (+${gainedScore} 점!)`:''}</span>
+        {(Date.now()-tScoreUpdated < 1500) &&
+          <span className="text-green-400">{gainedScore} 점!</span>
+        }
+        {(Date.now()-tScoreUpdated < 1500) && nCombo > 0 &&
+          <span className="text-red-400">+{nCombo} Combo!</span>
+        }
       </div>
     </main>
   )
